@@ -1,0 +1,1 @@
+export const PREDICT_PRICE = "PREDICT_PRICE"
