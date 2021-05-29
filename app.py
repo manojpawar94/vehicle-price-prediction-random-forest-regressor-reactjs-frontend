@@ -10,7 +10,7 @@ from datetime import date
 app = Flask(__name__)
 cors = CORS(app, resources={r"*": {"origins": "*"}})
 
-model = pickle.load(open('random_forest_regression_model.pkl', 'rb'))
+rfrModel = pickle.load(open('random_forest_regression_model.pkl', 'rb'))
 standard_to = StandardScaler()
 
 
@@ -19,43 +19,40 @@ def predict():
     Fuel_Type_Diesel = 0
 
     if request.method == 'POST':
+        purachedYear = int(request.form['purchasedYear'])
+        No_Years_Used = date.today().year - purachedYear
 
-        Year = int(request.form['Year'])
+        Present_Price = float(request.form['showroomPrice'])
 
-        Present_Price = float(request.form['Present_Price'])
+        kmsDriven = int(request.form['kmsDriven'])
+        Kms_Driven = np.log(kmsDriven)
 
-        Kms_Driven = int(request.form['Kms_Driven'])
+        Owner = int(request.form['owner'])
 
-        Kms_Driven2 = np.log(Kms_Driven)
-
-        Owner = int(request.form['Owner'])
-
-        Fuel_Type_Petrol = request.form['Fuel_Type_Petrol']
-        if(Fuel_Type_Petrol == 'Petrol'):
+        fuelType = request.form['fuelType']
+        if(fuelType == 'Petrol'):
             Fuel_Type_Petrol = 1
             Fuel_Type_Diesel = 0
         else:
             Fuel_Type_Petrol = 0
             Fuel_Type_Diesel = 1
 
-        Year = date.today().year - Year
-
-        Seller_Type_Individual = request.form['Seller_Type_Individual']
-        if(Seller_Type_Individual == 'Individual'):
+        sellerType = request.form['sellerType']
+        if(sellerType == 'Individual'):
             Seller_Type_Individual = 1
         else:
             Seller_Type_Individual = 0
 
-        Transmission_Mannual = request.form['Transmission_Mannual']
-        if(Transmission_Mannual == 'Mannual'):
+        transmissionType = request.form['transmissionType']
+        if(transmissionType == 'Mannual'):
             Transmission_Mannual = 1
         else:
             Transmission_Mannual = 0
 
-        prediction = model.predict([[Present_Price,
-                                     Kms_Driven2,
+        prediction = rfrModel.predict([[Present_Price,
+                                     Kms_Driven,
                                      Owner,
-                                     Year,
+                                     No_Years_Used,
                                      Fuel_Type_Diesel,
                                      Fuel_Type_Petrol,
                                      Seller_Type_Individual,
@@ -64,9 +61,9 @@ def predict():
         output = round(prediction[0], 2)
         message = ""
         if output < 0:
-            message = "Sorry you cannot sell this car"
+            message = "Sorry you cannot sell this car."
         else:
-            message = "You Can Sell The Car at {} Lakhs".format(output)
+            message = "Vehicle can be selled at price of {} lakhs.".format(output)
 
         return jsonify(code=200, message=message, value=output)
     else:

@@ -2,3 +2,7 @@
   color: #007bff;
   text-align: center;
 }
+
+table td {
+  padding: 4px;
+}
